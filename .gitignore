@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+mlruns/
+mlflow.db
+models/*.joblib
+data/*.csv
+monitoring/prediction_log.csv
+monitoring/drift_report.json
+.pytest_cache/
+.DS_Store

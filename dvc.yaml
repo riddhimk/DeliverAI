@@ -1,0 +1,31 @@
+stages:
+  generate_data:
+    cmd: python data/generate_data.py
+    deps:
+      - data/generate_data.py
+    outs:
+      - data/raw.csv
+
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+      - data/raw.csv
+      - src/preprocess.py
+      - src/preprocessing.py
+    outs:
+      - data/train.csv
+      - data/test.csv
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - data/train.csv
+      - data/test.csv
+      - src/train.py
+      - src/preprocessing.py
+    outs:
+      - models/best_model.joblib
+      - models/model_comparison.csv
+    metrics:
+      - models/best_model_info.json:
+          cache: false
