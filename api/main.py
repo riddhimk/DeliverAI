@@ -6,6 +6,7 @@ Run with: uvicorn api.main:app --reload --port 8000
 
 import csv
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -19,12 +20,6 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT / "models" / "best_model.joblib"
 MODEL_INFO_PATH = ROOT / "models" / "best_model_info.json"
 PREDICTION_LOG_PATH = ROOT / "monitoring" / "prediction_log.csv"
-
-app = FastAPI(
-    title="DeliverAI ETA Prediction API",
-    description="Predicts food delivery ETA (minutes) from order features.",
-    version="1.0.0",
-)
 
 _model = None
 _model_info = {}
@@ -72,8 +67,8 @@ def _load_model():
         _model_info = json.loads(MODEL_INFO_PATH.read_text())
 
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     _load_model()
     PREDICTION_LOG_PATH.parent.mkdir(exist_ok=True)
     if not PREDICTION_LOG_PATH.exists():
@@ -84,6 +79,15 @@ def startup_event():
                  "traffic_level", "prep_time_min", "courier_experience_yr",
                  "predicted_eta_min"]
             )
+    yield
+
+
+app = FastAPI(
+    title="DeliverAI ETA Prediction API",
+    description="Predicts food delivery ETA (minutes) from order features.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/health")
