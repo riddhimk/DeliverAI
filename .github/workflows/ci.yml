@@ -26,6 +26,9 @@ jobs:
       - name: Generate data
         run: python data/generate_data.py
 
+      - name: Preprocess data
+        run: python src/preprocess.py
+
       - name: Train and log models (smoke test)
         run: python src/train.py
 
