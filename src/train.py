@@ -91,7 +91,18 @@ def main():
                 {f"model__{k}": v for k, v in model.get_params().items()}
             )
             mlflow.log_metrics(metrics)
-            mlflow.sklearn.log_model(pipeline, artifact_path="model")
+            try:
+                mlflow.sklearn.log_model(
+                    pipeline,
+                    name="model",
+                    skops_trusted_types=["sklearn.tree._tree.Tree"],
+                )
+            except TypeError:
+                mlflow.sklearn.log_model(
+                    pipeline,
+                    artifact_path="model",
+                    serialization_format="cloudpickle",
+                )
 
             results.append({"model": name, **metrics})
             print(f"[{name}] MAE={metrics['mae']:.2f} RMSE={metrics['rmse']:.2f} "
