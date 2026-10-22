@@ -20,17 +20,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run unit tests
-        run: pytest tests/ -v
-
       - name: Generate data
         run: python data/generate_data.py
 
       - name: Preprocess data
         run: python src/preprocess.py
 
-      - name: Train and log models (smoke test)
+      - name: Train and log models
         run: python src/train.py
+
+      - name: Run unit tests
+        run: pytest tests/ -v
 
       - name: Upload trained model as artifact
         uses: actions/upload-artifact@v4

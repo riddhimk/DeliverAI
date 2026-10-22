@@ -75,6 +75,19 @@ def test_drift_computation():
 
 
 def test_api_health_and_predict():
+    model_path = ROOT / "models" / "best_model.joblib"
+    if not model_path.exists():
+        import joblib
+        model_dir = ROOT / "models"
+        model_dir.mkdir(exist_ok=True)
+        sample_df = generate(n_rows=100)
+        pipe = build_pipeline(LinearRegression())
+        pipe.fit(sample_df[ALL_FEATURES], sample_df[TARGET])
+        joblib.dump(pipe, model_path)
+        (model_dir / "best_model_info.json").write_text(
+            '{"model_name": "linear_regression", "metrics": {"rmse": 3.8}}'
+        )
+
     with TestClient(app) as client:
         health_resp = client.get("/health")
         assert health_resp.status_code == 200
