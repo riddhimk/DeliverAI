@@ -59,7 +59,6 @@ curl -s http://127.0.0.1:8000/health || echo "API warming up..."
 echo "=============================================================================="
 echo " DeliverAI successfully deployed on AWS EC2!"
 echo " Web UI & REST API:    http://<ec2-public-ip>:8000"
-echo " Streamlit Dashboard:  http://<ec2-public-ip>:8501"
 echo " Interactive API Docs: http://<ec2-public-ip>:8000/docs"
 echo "=============================================================================="
 

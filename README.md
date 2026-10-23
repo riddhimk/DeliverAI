@@ -6,7 +6,7 @@ The project is architected and built to satisfy **100% of the course evaluation 
 - **CO1 (2 Marks):** Cloud Services & MLOps Fundamentals (AWS EC2 deployment automation, AWS S3 DVC remote, Docker containerization with restart policies).
 - **CO2 (2 Marks):** ML Pipeline Design & CI/CD Implementation (3-stage DVC pipeline `generate_data` ➔ `preprocess` ➔ `train`, GitHub Actions CI pipeline with automated testing and model artifact publishing).
 - **CO3 (2 Marks):** Model Tracking, Monitoring & Optimization (MLflow SQLite experiment tracking across 4 regressors, MAE/RMSE/R²/MAPE benchmarking, best model auto-selection, and statistical data drift detection).
-- **CO4 (4 Marks):** Accurate Documentation, Deployment Strategy & Dual Frontend Presentation (Interactive Web UI + Streamlit Analytics Dashboard, Docker compose orchestration, comprehensive cloud runbooks).
+- **CO4 (4 Marks):** Accurate Documentation, Deployment Strategy & Static Web UI Presentation (Modern static HTML/CSS/JS web application, Docker compose containerization, comprehensive cloud runbooks).
 
 ---
 
@@ -42,7 +42,6 @@ flowchart TD
     subgraph Serving & UI ["Inference & Presentation (Docker)"]
         BestModel --> FastAPI["FastAPI Engine (:8000)<br/>api/main.py"]
         FastAPI --> WebUI["Static Modern Web UI (:8000)<br/>frontend/index.html"]
-        FastAPI --> StreamlitUI["Streamlit Dashboard (:8501)<br/>frontend/app.py"]
         FastAPI --> DriftLog[("monitoring/prediction_log.csv")]
         DriftLog --> DriftMonitor["monitoring/monitor_drift.py<br/>(Drift Radar)"]
         DriftMonitor --> WebUI
@@ -58,7 +57,7 @@ flowchart TD
 | **CO1** | **Cloud Services & MLOps Fundamentals** | • AWS EC2 automated provisioning & deployment script ([`deploy/ec2_setup.sh`](file:///deploy/ec2_setup.sh))<br/>• AWS S3 cloud remote storage configuration script ([`deploy/s3_dvc_setup.sh`](file:///deploy/s3_dvc_setup.sh))<br/>• Docker containerization with automated restart policy (`restart: unless-stopped`) & health check probe ([`Dockerfile`](file:///Dockerfile), [`docker-compose.yml`](file:///docker-compose.yml)) | **2 / 2** |
 | **CO2** | **ML Pipeline Design & CI/CD** | • 3-stage reproducible DVC pipeline (`generate_data` ➔ `preprocess` ➔ `train`) tracked via [`dvc.yaml`](file:///dvc.yaml) & [`dvc.lock`](file:///dvc.lock)<br/>• Shared pipeline transformation ([`src/preprocessing.py`](file:///src/preprocessing.py)) preventing train/serve skew<br/>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)) testing pipeline, dependencies, and publishing model artifacts | **2 / 2** |
 | **CO3** | **Model Tracking, Monitoring & Optimization** | • MLflow SQLite database ([`mlflow.db`](file:///mlflow.db)) tracking 4 regression models with full hyperparams & metrics<br/>• Model optimization: automated selection of best candidate by RMSE (`gradient_boosting`, RMSE: 3.64, $R^2$: 0.92)<br/>• Real-time data drift monitoring ([`monitoring/monitor_drift.py`](file:///monitoring/monitor_drift.py)) comparing live query distributions to baseline | **2 / 2** |
-| **CO4** | **Documentation, Deployment & Presentation** | • Comprehensive architecture documentation, Mermaid diagrams, API references<br/>• Multi-container Docker compose deployment with health checks<br/>• Modern, dark-mode fire gradient Web UI (`http://localhost:8000`) + Streamlit analytics dashboard (`http://localhost:8501`) | **4 / 4** |
+| **CO4** | **Documentation, Deployment & Presentation** | • Comprehensive architecture documentation, Mermaid diagrams, API references<br/>• Production Docker containerization with health checks and restart policies<br/>• Modern, dark-mode fire gradient static Web UI (`http://localhost:8000`) integrated seamlessly with FastAPI | **4 / 4** |
 | **Total** | | **Comprehensive rubric fulfillment** | **10 / 10** |
 
 ---
@@ -143,22 +142,15 @@ The winning model (`Gradient Boosting`) is automatically saved to [`models/best_
 
 ---
 
-## 🌐 Running the Application & UI
+## 🌐 Running the Application & Web UI
 
-### Option A: Local FastAPI Server (API + Web UI)
+Start the unified FastAPI server:
 ```bash
 uvicorn api.main:app --reload --port 8000
 ```
 - **Modern Static Web UI:** [http://localhost:8000](http://localhost:8000) (Live ETA prediction, Model Showdown, Drift Radar, Pipeline Visualizer)
 - **Interactive Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Health Check Endpoint:** [http://localhost:8000/health](http://localhost:8000/health)
-
-### Option B: Streamlit Analytical Dashboard
-In a secondary terminal:
-```bash
-streamlit run frontend/app.py --server.port 8501
-```
-Open [http://localhost:8501](http://localhost:8501) for interactive parameter sliders and live metric charts.
 
 ---
 
@@ -175,23 +167,23 @@ This computes feature mean and standard deviation shifts, generating [`monitorin
 
 ## 🐳 Docker Containerization
 
-The system includes a production multi-container setup with automated restart policies and container health checks.
+The system includes a production Docker setup with automated restart policies and container health checks.
 
 ```bash
-# Build and start both API (port 8000) and Streamlit (port 8501)
+# Build and start the DeliverAI service
 docker compose up --build -d
 
 # Check running status and health checks
 docker compose ps
 
 # View live container logs
-docker compose logs -f api
+docker compose logs -f deliverai
 
 # Stop containers
 docker compose down
 ```
 
-Both containers feature `restart: unless-stopped`, ensuring immediate automatic recovery if an unhandled crash or host reboot occurs.
+The container features `restart: unless-stopped`, ensuring immediate automatic recovery if an unhandled crash or host reboot occurs.
 
 ---
 
@@ -202,8 +194,8 @@ flowchart LR
     GitHub["GitHub Repository<br/>riddhimk/DeliverAI"] -->|git push| GHA["GitHub Actions CI"]
     GHA -->|Build & Test| Artifacts["Model Artifacts"]
     S3[("AWS S3 Bucket<br/>s3remote")] <-->|dvc push / pull| EC2["AWS EC2 Instance<br/>(Ubuntu 22.04)"]
-    EC2 -->|docker compose up -d| Docker["Docker Containers<br/>(restart: unless-stopped)"]
-    Docker --> WebClient["End Users / Web Browsers<br/>(:8000 & :8501)"]
+    EC2 -->|docker compose up -d| Docker["Docker Container<br/>(restart: unless-stopped)"]
+    Docker --> WebClient["End Users / Web Browsers<br/>(:8000)"]
 ```
 
 ### 1. Setting up AWS S3 DVC Remote (CO1)
@@ -217,7 +209,7 @@ dvc push -r s3remote
 
 ### 2. Deploying on AWS EC2 (CO1 & CO4)
 1. Launch an AWS EC2 instance (`t3.medium` or `t2.medium`, Ubuntu 22.04 LTS).
-2. Configure Security Group allowing inbound TCP traffic on ports **8000** (Web UI & API) and **8501** (Streamlit Dashboard).
+2. Configure Security Group allowing inbound TCP traffic on port **8000** (Web UI & API).
 3. Connect via SSH and run the one-command deployment script:
    ```bash
    curl -fsSL https://raw.githubusercontent.com/riddhimk/DeliverAI/main/deploy/ec2_setup.sh | bash
