@@ -10,3 +10,9 @@ monitoring/prediction_log.csv
 monitoring/drift_report.json
 .pytest_cache/
 .DS_Store
+node_modules/
+.output/
+.wrangler/
+dist/
+deliverai-ui.zip
+deliverai-src/

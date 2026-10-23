@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeliverAI — Food Delivery ETA Prediction</title>
+  <meta name="description" content="Predict food delivery ETA from distance, traffic, weather, vehicle, prep time and courier experience.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛵</text></svg>">
+</head>
+<body>
+
+  <!-- Sticky Site Navigation Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="#predict" class="brand-link" id="brand-logo">
+        <span class="brand-icon bg-fire">D</span>
+        Deliver<span class="text-fire">AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#predict" class="nav-tab active" data-tab="predict">Predict</a>
+        <a href="#models" class="nav-tab" data-tab="models">Models</a>
+        <a href="#drift" class="nav-tab" data-tab="drift">Drift</a>
+        <a href="#pipeline" class="nav-tab" data-tab="pipeline">Pipeline</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Views -->
+  <main class="main-content">
+
+    <!-- 1. PREDICT VIEW -->
+    <section id="predict-view" class="tab-view active">
+      <div class="section-hero">
+        <div class="tag-badge">
+          <p class="tag-label">MLOps · ETA Prediction</p>
+          <span id="backend-status-badge" class="live-pill offline">
+            <span class="live-dot"></span>
+            <span id="backend-status-text">Connecting...</span>
+          </span>
+        </div>
+        <h1 class="hero-title">
+          Hot food. <span class="text-fire">Exact minutes.</span>
+        </h1>
+        <p class="hero-desc">Tune the order below and watch the best model predict delivery time in real time.</p>
+      </div>
+
+      <div class="predict-grid">
+        <!-- Controls Panel -->
+        <div class="panel controls-card">
+          <!-- Distance Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Distance</span>
+              <span class="slider-val" id="val-distance">5.0 km</span>
+            </div>
+            <input type="range" id="input-distance" class="custom-range" min="0.5" max="25" step="0.5" value="5">
+          </div>
+
+          <!-- Kitchen Prep Time Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Kitchen prep time</span>
+              <span class="slider-val" id="val-prep">15 min</span>
+            </div>
+            <input type="range" id="input-prep" class="custom-range" min="5" max="45" step="1" value="15">
+          </div>
+
+          <!-- Courier Experience Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Courier experience</span>
+              <span class="slider-val" id="val-exp">3.0 yrs</span>
+            </div>
+            <input type="range" id="input-exp" class="custom-range" min="0" max="10" step="0.5" value="3">
+          </div>
+
+          <!-- Traffic Chips -->
+          <div class="chips-group">
+            <span class="chips-title">Traffic</span>
+            <div class="chips-row" id="chips-traffic">
+              <button type="button" class="chip-btn" data-val="Low">Low</button>
+              <button type="button" class="chip-btn active" data-val="Medium">Medium</button>
+              <button type="button" class="chip-btn" data-val="High">High</button>
+            </div>
+          </div>
+
+          <!-- Weather Chips -->
+          <div class="chips-group">
+            <span class="chips-title">Weather</span>
+            <div class="chips-row" id="chips-weather">
+              <button type="button" class="chip-btn active" data-val="Clear">Clear</button>
+              <button type="button" class="chip-btn" data-val="Windy">Windy</button>
+              <button type="button" class="chip-btn" data-val="Foggy">Foggy</button>
+              <button type="button" class="chip-btn" data-val="Rainy">Rainy</button>
+              <button type="button" class="chip-btn" data-val="Snowy">Snowy</button>
+            </div>
+          </div>
+
+          <!-- Vehicle Chips -->
+          <div class="chips-group">
+            <span class="chips-title">Vehicle</span>
+            <div class="chips-row" id="chips-vehicle">
+              <button type="button" class="chip-btn" data-val="Bike">Bike</button>
+              <button type="button" class="chip-btn active" data-val="Scooter">Scooter</button>
+              <button type="button" class="chip-btn" data-val="Car">Car</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Glowing Result Hero Card -->
+        <div class="result-wrapper bg-fire shadow-glow">
+          <div class="result-card">
+            <div>
+              <p class="result-tag">Predicted ETA</p>
+              <div class="eta-display">
+                <span class="eta-number text-fire" id="result-eta">28.4</span>
+                <span class="eta-unit">min</span>
+              </div>
+              <p class="status-label ontrack" id="result-level">On track</p>
+            </div>
+
+            <div class="meta-table">
+              <div class="meta-row">
+                <span>model</span>
+                <span class="meta-val" id="result-model">GradientBoosting</span>
+              </div>
+              <div class="meta-row">
+                <span>endpoint</span>
+                <span class="meta-val">POST /predict</span>
+              </div>
+              <div class="meta-row">
+                <span>rmse</span>
+                <span class="meta-val highlight" id="result-rmse">3.64</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MODELS SHOWDOWN VIEW -->
+    <section id="models-view" class="tab-view">
+      <div class="section-hero">
+        <div class="tag-badge">
+          <p class="tag-label">MLflow · deliverai-eta-prediction</p>
+          <span class="live-pill online">
+            <span class="live-dot"></span>
+            <span>Live Registry</span>
+          </span>
+        </div>
+        <h1 class="hero-title">Model <span class="text-fire">showdown</span></h1>
+        <p class="hero-desc">Four regression models trained and tracked via MLflow SQLite backend. Lowest RMSE wins the registry.</p>
+      </div>
+
+      <div class="models-grid" id="models-container">
+        <!-- Dynamically rendered or pre-filled -->
+      </div>
+    </section>
+
+    <!-- 3. DRIFT RADAR VIEW -->
+    <section id="drift-view" class="tab-view">
+      <div class="section-hero">
+        <div class="tag-badge">
+          <p class="tag-label">monitoring/drift_report.json</p>
+          <span class="live-pill online">
+            <span class="live-dot"></span>
+            <span>Live Monitor</span>
+          </span>
+        </div>
+        <h1 class="hero-title">Drift <span class="text-fire">radar</span></h1>
+        <p class="hero-desc">Compares live incoming prediction requests against training baseline distributions.</p>
+      </div>
+
+      <div class="drift-stats-grid">
+        <div class="panel drift-stat-panel">
+          <p class="drift-stat-title">Features monitored</p>
+          <p class="drift-stat-number" id="drift-stat-monitored">3</p>
+        </div>
+        <div class="panel drift-stat-panel">
+          <p class="drift-stat-title">Logged predictions</p>
+          <p class="drift-stat-number" id="drift-stat-logged">17</p>
+        </div>
+        <div class="panel drift-stat-panel">
+          <p class="drift-stat-title">Drift alerts</p>
+          <p class="drift-stat-number text-fire" id="drift-stat-alerts">2</p>
+        </div>
+      </div>
+
+      <div class="panel drift-table" id="drift-rows-container">
+        <!-- Dynamically populated rows -->
+      </div>
+    </section>
+
+    <!-- 4. PIPELINE VIEW -->
+    <section id="pipeline-view" class="tab-view">
+      <div class="section-hero">
+        <div class="tag-badge">
+          <p class="tag-label">dvc repro · github actions</p>
+          <span class="live-pill online">
+            <span class="live-dot"></span>
+            <span id="pipeline-status-text">FastAPI Active</span>
+          </span>
+        </div>
+        <h1 class="hero-title">The <span class="text-fire">pipeline</span></h1>
+        <p class="hero-desc">From raw data to a live, monitored API — reproducing the complete MLOps architecture.</p>
+      </div>
+
+      <ol class="pipeline-list">
+        <li class="pipeline-item">
+          <span class="node-badge hot">1</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Raw Data</h2>
+            <p class="pipeline-desc">Versioned via DVC remote (dvc push / pull)</p>
+            <code class="pipeline-code">data/generate_data.py</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge primary">2</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Preprocessing</h2>
+            <p class="pipeline-desc">Validates schema, cleans, splits train/test</p>
+            <code class="pipeline-code">src/preprocess.py</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge primary">3</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Experiments</h2>
+            <p class="pipeline-desc">Linear, Ridge, RF, Gradient Boosting tracked in MLflow</p>
+            <code class="pipeline-code">src/train.py</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge sun">4</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Best Model</h2>
+            <p class="pipeline-desc">Lowest RMSE selected automatically</p>
+            <code class="pipeline-code">models/best_model_info.json</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge lime">5</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Model Registry</h2>
+            <p class="pipeline-desc">Pushed to DVC remote storage</p>
+            <code class="pipeline-code">models/best_model.joblib</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge sun">6</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">API + Docker</h2>
+            <p class="pipeline-desc">FastAPI /health & /predict, runtime model loading</p>
+            <code class="pipeline-code">api/main.py</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge primary">7</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">EC2 / Host</h2>
+            <p class="pipeline-desc">Container kept alive by restart: unless-stopped</p>
+            <code class="pipeline-code">docker-compose.yml</code>
+          </div>
+        </li>
+        <li class="pipeline-item">
+          <span class="node-badge hot">8</span>
+          <div class="panel pipeline-card">
+            <h2 class="pipeline-title">Client & Monitoring</h2>
+            <p class="pipeline-desc">Interactive predictions and drift reports</p>
+            <code class="pipeline-code">monitoring/monitor_drift.py</code>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

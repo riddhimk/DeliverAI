@@ -29,8 +29,8 @@ stages:
       size: 903
     - path: src/train.py
       hash: md5
-      md5: d420d50afb4f933038fcf380631ace4a
-      size: 4137
+      md5: 649f0c4cbc1376f717c1d26a57d94923
+      size: 4496
     outs:
     - path: models/best_model.joblib
       hash: md5
@@ -42,7 +42,7 @@ stages:
       size: 189
     - path: models/model_comparison.csv
       hash: md5
-      md5: 273b6012ff9147e6f4582a8e0c5343c2
+      md5: 360a07eb4a655590ecb8b0b7f9a13af6
       size: 381
   preprocess:
     cmd: python src/preprocess.py

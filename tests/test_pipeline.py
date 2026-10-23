@@ -109,3 +109,27 @@ def test_api_health_and_predict():
         assert "predicted_eta_min" in pred_data
         assert pred_data["predicted_eta_min"] > 0
         assert "model_used" in pred_data
+
+
+def test_api_static_frontend_and_monitoring():
+    with TestClient(app) as client:
+        # Check static frontend is served
+        root_resp = client.get("/")
+        assert root_resp.status_code == 200
+        assert "DeliverAI" in root_resp.text
+
+        # Check models benchmark endpoint
+        models_resp = client.get("/api/models")
+        assert models_resp.status_code == 200
+        models_data = models_resp.json()
+        assert isinstance(models_data, list)
+        assert len(models_data) > 0
+        assert any(m.get("best") for m in models_data)
+
+        # Check drift endpoint
+        drift_resp = client.get("/api/drift")
+        assert drift_resp.status_code == 200
+        drift_data = drift_resp.json()
+        assert "features_monitored" in drift_data
+        assert "drift" in drift_data
+
