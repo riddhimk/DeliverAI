@@ -9,11 +9,11 @@
 
 set -e
 
-echo "=== [1/5] Updating system packages ==="
+echo "=== [1/6] Updating system packages ==="
 sudo apt-get update -y
 sudo apt-get install -y curl git apt-transport-https ca-certificates gnupg lsb-release
 
-echo "=== [2/5] Installing Docker Engine & Compose ==="
+echo "=== [2/6] Installing Docker Engine & Compose ==="
 if ! command -v docker &> /dev/null; then
     sudo install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -30,7 +30,7 @@ if ! command -v docker &> /dev/null; then
     sudo systemctl start docker
 fi
 
-echo "=== [3/5] Setting up DeliverAI Application ==="
+echo "=== [3/6] Setting up DeliverAI Application ==="
 APP_DIR="/opt/deliverai"
 sudo mkdir -p "$APP_DIR"
 sudo chown -R "$USER:$USER" "$APP_DIR"
@@ -46,12 +46,20 @@ fi
 
 cd "$APP_DIR"
 
-echo "=== [4/5] Launching Containers with Restart Policy ==="
+echo "=== [4/6] Pulling DVC-tracked data & model artifacts from S3 ==="
+# Credentials come from the EC2 instance profile (IAM role with S3 access)
+if ! command -v dvc &> /dev/null; then
+    sudo apt-get install -y python3-pip
+    sudo pip3 install "dvc[s3]"
+fi
+dvc pull
+
+echo "=== [5/6] Launching Containers with Restart Policy ==="
 # docker compose up with --build and detached mode
 sudo docker compose down --remove-orphans || true
 sudo docker compose up -d --build
 
-echo "=== [5/5] Verifying Deployment Health ==="
+echo "=== [6/6] Verifying Deployment Health ==="
 sleep 8
 sudo docker compose ps
 curl -s http://127.0.0.1:8000/health || echo "API warming up..."

@@ -1,5 +1,5 @@
 [core]
-    remote = storage
-['remote "storage"']
-    url = ../../deliverai_dvc_remote
-
+    remote = s3remote
+['remote "s3remote"']
+    url = s3://deliverai-mlops-412341941552-ap-south-1/dvc-storage
+    region = ap-south-1
