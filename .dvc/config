@@ -1,5 +1,5 @@
 [core]
     remote = s3remote
 ['remote "s3remote"']
-    url = s3://deliverai-mlops-412341941552-ap-south-1/dvc-storage
-    region = ap-south-1
+    url = s3://deliverai-mlops-veeraj-20261027-469144444514-ap-southeast-2-an/dvc-storage
+    region = ap-southeast-2
