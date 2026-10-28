@@ -2,3 +2,4 @@
     remote = storage
 ['remote "storage"']
     url = ../../deliverai_dvc_remote
+

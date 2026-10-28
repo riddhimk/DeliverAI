@@ -71,3 +71,4 @@ if __name__ == "__main__":
     df = generate()
     df.to_csv(out_path, index=False)
     print(f"Wrote {len(df)} rows to {out_path}")
+

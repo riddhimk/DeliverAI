@@ -24,3 +24,4 @@ def build_preprocessor() -> ColumnTransformer:
 
 def build_pipeline(model) -> Pipeline:
     return Pipeline(steps=[("preprocess", build_preprocessor()), ("model", model)])
+

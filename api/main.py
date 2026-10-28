@@ -270,3 +270,4 @@ FRONTEND_DIR = ROOT / "frontend"
 if (FRONTEND_DIR / "index.html").exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
+# DeliverAI

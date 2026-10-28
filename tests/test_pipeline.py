@@ -133,3 +133,4 @@ def test_api_static_frontend_and_monitoring():
         assert "features_monitored" in drift_data
         assert "drift" in drift_data
 
+# DeliverAI

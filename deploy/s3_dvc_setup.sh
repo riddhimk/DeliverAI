@@ -52,3 +52,4 @@ echo ""
 echo "To pull artifacts onto EC2 or another machine:"
 echo "  dvc pull -r s3remote"
 
+# DeliverAI
